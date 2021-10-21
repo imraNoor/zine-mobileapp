@@ -6,25 +6,28 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
+import {useDispatch} from 'react-redux';
+import Actions from '../../_redux/actions';
+import APIs from '../../lib/api';
 import Hook from '../../lib/hook';
 import fontFamily from '../../constants/fontFamily';
-import {register} from '../../redux/action/authAction';
+//import {register} from '../../redux/action/authAction';
 import Loader from '../../components/loader';
-import {connect} from 'react-redux';
+//import {connect} from 'react-redux';
 import checkEmail from '../../lib/utilts/checkEmail';
 import images from '../../constants/images';
 
-var logo = require('../../assets/img/Logo2.png');
-var user = require('../../assets/img/user.png');
-var phone = require('../../assets/img/phone.png');
-var city = require('../../assets/img/city.png');
-var mail = require('../../assets/img/mail.png');
-var lock = require('../../assets/img/lock.png');
+const logo = require('../../assets/img/Logo2.png');
+const user = require('../../assets/img/user.png');
+const phone = require('../../assets/img/phone.png');
+const city = require('../../assets/img/city.png');
+const mail = require('../../assets/img/mail.png');
+const lock = require('../../assets/img/lock.png');
 
-function SignUp({navigation, signUpHandler}) {
+function SignUp({navigation}: {navigation: any}) {
   const [kbHeight] = Hook.useKeyboard();
   const [showIndicator, isShowIndicator] = useState(false);
   const [username, setUserName] = useState('');
@@ -42,7 +45,7 @@ function SignUp({navigation, signUpHandler}) {
   const [nameErr, setNameErr] = useState('');
   const [cityErr, setCityErr] = useState('');
   const [numberErr, setNumbErr] = useState('');
-
+  const dispatch = useDispatch();
   const postSignUpHandler = () => {
     checkAllfiled(username, cityName, phoneNumber);
     let checkerEmail = checkEmail(email);
@@ -51,18 +54,28 @@ function SignUp({navigation, signUpHandler}) {
     checkerEmail
       ? passwordCorrect &&
         (isShowIndicator(true),
-        signUpHandler(
-          username,
-          phoneNumber,
-          cityName,
+        APIs.Register({
+          name: username,
+          phone: phoneNumber,
           email,
           password,
-          confirmPassword,
-        ).then(res => {
+          cityName,
+          c_password: confirmPassword,
+        }).then(res => {
           if (res) {
+            console.log('RES', res);
             if (res.success) {
               isDone(true);
-              setTimeout(() => navigation.replace('SignIn'), 2000);
+              setTimeout(() => {
+                navigation.goBack();
+                // Actions.letAuthorizeUser({
+                //   ...res.data,
+                //   phone_number: phone,
+                //   city,
+                //   image: null,
+                //   email,
+                // })(dispatch);
+              }, 2000);
             } else {
               isShowIndicator(false);
               console.log(res);
@@ -76,36 +89,38 @@ function SignUp({navigation, signUpHandler}) {
         }))
       : setEmailErr('Please Enter Your Correct Email !');
   };
-  const checkPassword = (password, confirmPassword) => {
+  const checkPassword = (passwordx, confirmPasswordx) => {
     // console.log(password, confirmPassword);
-    let passwordLength = password.length;
-    if (passwordLength > 8 && confirmPassword.length > 8) {
-      if (password === confirmPassword) {
+    let passwordLength = passwordx.length;
+    if (passwordLength >= 8 && confirmPasswordx.length >= 8) {
+      if (passwordx === confirmPasswordx) {
         setCPassErr('');
         setPassErr('');
         return true;
       } else {
         return false;
       }
-    } else setCPassErr('The password must be at least 8 characters.');
+    } else {
+      setCPassErr('The password must be at least 8 characters.');
+    }
     setPassErr('The password must be at least 8 characters.');
     return false;
   };
-  const checkAllfiled = (username, cityName, phoneNumber) => {
-    const userLength = username.length;
-    const phoneLength = phoneNumber.length;
-    const cityLength = cityName.length;
+  const checkAllfiled = (usernamex, cityNamex, phoneNumberx) => {
+    const userLength = usernamex.length;
+    const phoneLength = phoneNumberx.length;
+    const cityLength = cityNamex.length;
     userLength === 0 && setNameErr('Please Enter your Username Carefully !');
     phoneLength === 0 && setNumbErr('Please Enter your Number Carefully !');
     cityLength === 0 && setCityErr('Please Enter your City Carefully !');
   };
 
-  const showPassword = (passwordShow) =>{
-    setPasswordShow(!passwordShow)
-  }
-  const showConfPassword = (password) =>{
-    setConfPasswordShow(!password)
-  }
+  const showPassword = passwordShowx => {
+    setPasswordShow(!passwordShowx);
+  };
+  const showConfPassword = passwordx => {
+    setConfPasswordShow(!passwordx);
+  };
   return (
     <View style={styles.mainContainer}>
       <Loader visible={showIndicator} done={done} />
@@ -137,6 +152,8 @@ function SignUp({navigation, signUpHandler}) {
                   <Image style={styles.inputImg} source={user} />
                 </View>
                 <TextInput
+                  placeholderTextColor="#444"
+                  placeholder="Name"
                   style={styles.inputFiled}
                   onChangeText={e => {
                     setUserName(e);
@@ -159,6 +176,8 @@ function SignUp({navigation, signUpHandler}) {
                     setPhoneNumber(e);
                     numberErr && setNumbErr('');
                   }}
+                  placeholderTextColor="#444"
+                  placeholder="Phone"
                   value={phoneNumber}
                   maxLength={11}
                   keyboardType="number-pad"
@@ -174,6 +193,8 @@ function SignUp({navigation, signUpHandler}) {
                 </View>
                 <TextInput
                   style={styles.inputFiled}
+                  placeholder="City"
+                  placeholderTextColor="#444"
                   onChangeText={e => {
                     setCityName(e);
                     cityErr && setCityErr('');
@@ -191,6 +212,8 @@ function SignUp({navigation, signUpHandler}) {
                 </View>
                 <TextInput
                   style={styles.inputFiled}
+                  placeholder="Email"
+                  placeholderTextColor="#444"
                   onChangeText={e => {
                     setEmail(e);
                     emailErr && setEmailErr('');
@@ -212,21 +235,23 @@ function SignUp({navigation, signUpHandler}) {
                     setPassword(e);
                     passErr && setPassErr('');
                   }}
+                  placeholder="Password"
+                  placeholderTextColor="#444"
                   value={password}
                   secureTextEntry={!passwordShow}
                 />
                 <View style={styles.imgView}>
-                <TouchableOpacity
-                  onPress={() => {
-                    showPassword(passwordShow);
-                  }}>
-                  {passwordShow ? (
-                    <Image style={styles.inputImg} source={images.unhide} />
-                  ) : (
-                    <Image style={styles.inputImg} source={images.hide} />
-                  )}
-                </TouchableOpacity>
-              </View>
+                  <TouchableOpacity
+                    onPress={() => {
+                      showPassword(passwordShow);
+                    }}>
+                    {passwordShow ? (
+                      <Image style={styles.inputImg} source={images.unhide} />
+                    ) : (
+                      <Image style={styles.inputImg} source={images.hide} />
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
               {Boolean(passErr) && (
                 <Text style={styles.errorText}>{passErr}</Text>
@@ -237,6 +262,8 @@ function SignUp({navigation, signUpHandler}) {
                   <Image style={styles.inputImg} source={lock} />
                 </View>
                 <TextInput
+                  placeholder="Confirm Password"
+                  placeholderTextColor="#444"
                   style={styles.inputFiled}
                   onChangeText={e => {
                     setConfirmPassword(e);
@@ -245,18 +272,18 @@ function SignUp({navigation, signUpHandler}) {
                   value={confirmPassword}
                   secureTextEntry={!confPasswordShow}
                 />
-                 <View style={styles.imgView}>
-                <TouchableOpacity
-                  onPress={() => {
-                    showConfPassword(confPasswordShow);
-                  }}>
-                  {confPasswordShow ? (
-                    <Image style={styles.inputImg} source={images.unhide} />
-                  ) : (
-                    <Image style={styles.inputImg} source={images.hide} />
-                  )}
-                </TouchableOpacity>
-              </View>
+                <View style={styles.imgView}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      showConfPassword(confPasswordShow);
+                    }}>
+                    {confPasswordShow ? (
+                      <Image style={styles.inputImg} source={images.unhide} />
+                    ) : (
+                      <Image style={styles.inputImg} source={images.hide} />
+                    )}
+                  </TouchableOpacity>
+                </View>
               </View>
               {Boolean(cPassErr) && (
                 <Text style={styles.errorText}>{cPassErr}</Text>
@@ -279,16 +306,16 @@ function SignUp({navigation, signUpHandler}) {
     </View>
   );
 }
-const mapStateToProps = state => ({
-  isLogin: state.auth.isLogin,
-  isLoading: state.app.isLoading,
-});
+// const mapStateToProps = state => ({
+//   isLogin: state.auth.isLogin,
+//   isLoading: state.app.isLoading,
+// });
 
-const mapDispatchToProps = dispatch => ({
-  signUpHandler: (username, phoneNumber, cityName, email, pass, cpassword) =>
-    dispatch(register(username, phoneNumber, cityName, email, pass, cpassword)),
-});
-export default connect(mapStateToProps, mapDispatchToProps)(SignUp);
+// const mapDispatchToProps = dispatch => ({
+//   signUpHandler: (username, phoneNumber, cityName, email, pass, cpassword) =>
+//     dispatch(register(username, phoneNumber, cityName, email, pass, cpassword)),
+// });
+export default SignUp;
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -342,6 +369,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     paddingLeft: 10,
     fontFamily: fontFamily.POPPINS_REGULAR,
+    color: '#222',
   },
   formDiv: {
     marginTop: 20,

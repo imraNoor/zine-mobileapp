@@ -1,17 +1,20 @@
-import React, { useEffect } from 'react';
-import {View, Text, StyleSheet,StatusBar} from 'react-native';
+import React, {useEffect} from 'react';
+import {View, Text, StyleSheet, StatusBar} from 'react-native';
 import {WebView} from 'react-native-webview';
 import LottieView from 'lottie-react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 const MessageScreen = () => {
   const {top, bottom} = useSafeAreaInsets();
-  useEffect(()=>{
-    StatusBar.setBackgroundColor("#008dd5")
-  },[])
+  useEffect(() => {
+    //StatusBar.setBackgroundColor('#008dd5');
+  }, []);
   return (
-    <View style={[styles.mainContainer,{paddingBottom:63+25+bottom,paddingTop:top}]}>
-    
+    <View
+      style={[
+        styles.mainContainer,
+        {paddingBottom: 63 + 25 + bottom, paddingTop: top},
+      ]}>
       <WebView
         style={{flex: 1}}
         javaScriptEnabled
@@ -51,6 +54,6 @@ export default MessageScreen;
 const styles = StyleSheet.create({
   mainContainer: {
     flex: 1,
-    backgroundColor:"#fff"
+    backgroundColor: '#fff',
   },
 });

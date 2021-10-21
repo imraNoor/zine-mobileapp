@@ -1,4 +1,4 @@
-import React, {useState, Fragment} from 'react';
+import React, {useState, Fragment, useEffect} from 'react';
 import {
   View,
   Text,
@@ -7,18 +7,45 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
-  ActivityIndicator,
   Platform,
 } from 'react-native';
+import {useSelector, useDispatch} from 'react-redux';
+import APIs from '../lib/api';
+import Actions from '../_redux/actions';
 import fontFamily from '../constants/fontFamily';
 import Mainheader from '../components/header';
 import images from '../constants/images';
 import Loader from '../components/loader';
-import {showMessage, hideMessage} from 'react-native-flash-message';
-
+import ImageTaker from '../components/imageTaker';
 function ProfileScreen({navigation}: {navigation: any}) {
   const [showIndicator, isShowIndicator] = useState(false);
+  const {detail} = useSelector(({USER}) => USER);
+  const dispatch = useDispatch();
   const [done, isDone] = useState(false);
+  const [password, setPassword] = useState('');
+  const [cPassword, setCPassword] = useState('');
+  const [name, setName] = useState(detail.name);
+  const [phone, setphone] = useState(
+    detail.phone_number ? detail.phone_number : '',
+  );
+  useEffect(() => {}, []);
+  const updateInfo = () => {
+    if (password && cPassword !== password) {
+      return false;
+    }
+    if (name.length < 3) {
+      return false;
+    }
+    APIs.UpdateInfo(
+      password
+        ? {name, phone_number: phone, password}
+        : {name, phone_number: phone},
+    )
+      .then(ee => {
+        console.log('fff', JSON.stringify(ee));
+      })
+      .finally(() => {});
+  };
   return (
     <Fragment>
       <Loader visible={showIndicator} done={done} />
@@ -28,79 +55,141 @@ function ProfileScreen({navigation}: {navigation: any}) {
           contentContainerStyle={{
             paddingBottom: Platform.OS === 'ios' ? 130 : 100,
           }}>
-          <View style={styles.mainContent}>
-            <View style={[styles.profileView, styles.commonDiv]}>
-              <View style={styles.userDetail}>
-                <View style={styles.userImgName}>
-                  <Image source={images.client} style={styles.clientImg} />
-                  <View>
-                    <Text style={styles.userName}>John Doe</Text>
-                    <Text style={styles.userEmail}>johndoe@gmail.com</Text>
-                  </View>
-                </View>
+          <View style={[styles.profileView, styles.commonDiv]}>
+            <View style={styles.userDetail}>
+              <View style={styles.userImgName}>
+                <ImageTaker
+                  photoSetter={
+                    ({mime, path}) => {
+                      if (path) {
+                        const data1 = new FormData();
+                        data1.append('image', {
+                          uri:
+                            Platform.OS === 'ios'
+                              ? path.replace('file://', '')
+                              : path,
+                          type: mime,
+                          name: 'user_avatar.jpg',
+                        });
+                        APIs.UploadImage(data1)
+                          .then(res => {
+                            if (res) {
+                              if (res.success) {
+                                const locDetail = {...detail};
+                                locDetail.image = res.data;
+                                Actions.refreshProfile(locDetail)(dispatch);
+                              }
+                            }
+                            console.log('res', JSON.stringify(res));
+                          })
+                          .finally(() => {});
+                      }
+                    }
+                    //console.log('dd', JSON.stringify(e));
+                  }>
+                  <Image
+                    source={
+                      detail?.image
+                        ? APIs.getServerImage(detail.image)
+                        : images.client
+                    }
+                    style={styles.clientImg}
+                  />
+                </ImageTaker>
                 <View>
-                  <TouchableOpacity>
-                    <Image source={images.edit} style={styles.editIcon} />
-                  </TouchableOpacity>
+                  <Text style={styles.userName}>{detail?.name}</Text>
+                  <Text style={styles.userEmail}>{detail?.email}</Text>
                 </View>
+              </View>
+              {/* <View>
+                <TouchableOpacity>
+                  <Image source={images.edit} style={styles.editIcon} />
+                </TouchableOpacity>
+              </View> */}
+            </View>
+          </View>
+          <View style={styles.underLine} />
+          <View style={styles.commonDiv}>
+            <Text style={styles.mainTitle}>Appointments</Text>
+            <View style={styles.multiAppoinment}>
+              <View style={styles.commonAppointment}>
+                <Text style={styles.valueAppointment}>00</Text>
+                <Text style={styles.durationAppointment}>To Date</Text>
+              </View>
+              <View style={styles.commonAppointment}>
+                <Text style={styles.valueAppointment}>00</Text>
+                <Text style={styles.durationAppointment}>To Week</Text>
+              </View>
+              <View style={styles.commonAppointment}>
+                <Text style={styles.valueAppointment}>00</Text>
+                <Text style={styles.durationAppointment}>To Month</Text>
               </View>
             </View>
-            <View style={styles.underLine}></View>
-            <View style={styles.commonDiv}>
-              <Text style={styles.mainTitle}>Appointments</Text>
-              <View style={styles.multiAppoinment}>
-                <View style={styles.commonAppointment}>
-                  <Text style={styles.valueAppointment}>00</Text>
-                  <Text style={styles.durationAppointment}>To Date</Text>
-                </View>
-                <View style={styles.commonAppointment}>
-                  <Text style={styles.valueAppointment}>00</Text>
-                  <Text style={styles.durationAppointment}>To Week</Text>
-                </View>
-                <View style={styles.commonAppointment}>
-                  <Text style={styles.valueAppointment}>00</Text>
-                  <Text style={styles.durationAppointment}>To Month</Text>
-                </View>
-              </View>
+          </View>
+          <View style={styles.underLine} />
+          <View style={styles.commonDiv}>
+            <Text style={[styles.mainTitle, {marginBottom: 15}]}>
+              Edit Profile
+            </Text>
+            <View style={styles.inputDiv}>
+              <TextInput
+                style={styles.inputFiled}
+                placeholder="User Name"
+                value={name}
+                onChangeText={setName}
+                placeholderTextColor={'#BBB'}
+              />
             </View>
-            <View style={styles.underLine}></View>
-            <View style={styles.commonDiv}>
-              <Text style={[styles.mainTitle, {marginBottom: 15}]}>
-                Edit Profile
-              </Text>
-              <View style={styles.inputDiv}>
-                <TextInput style={styles.inputFiled} placeholder="User Name" />
-              </View>
-              <View style={styles.inputDiv}>
-                <TextInput
-                  style={styles.inputFiled}
-                  placeholder="Phone Number"
-                />
-              </View>
-              <View style={styles.inputDiv}>
-                <TextInput style={styles.inputFiled} placeholder="E-mail" />
-              </View>
-              <View style={styles.inputDiv}>
-                <TextInput
-                  style={styles.inputFiled}
-                  placeholder="New Password"
-                />
-              </View>
-              <TouchableOpacity
-                style={styles.updateBtn}
-                onPress={() => {
-                  isShowIndicator(true);
-                  setTimeout(() => {
-                    // isShowIndicator(false);
-                    isDone(true);
-                    setTimeout(() => {
-                      navigation.navigate('Home');
-                    }, 2000);
-                  }, 5000);
-                }}>
-                <Text style={styles.updateText}>Update</Text>
-              </TouchableOpacity>
+            <View style={styles.inputDiv}>
+              <TextInput
+                style={styles.inputFiled}
+                placeholder="Phone Number"
+                value={phone}
+                keyboardType="name-phone-pad"
+                onChangeText={setphone}
+                placeholderTextColor={'#BBB'}
+              />
             </View>
+            <View style={styles.inputDiv}>
+              <TextInput
+                editable={false}
+                style={styles.inputFiled}
+                placeholder="E-mail"
+                value={detail ? detail.email : ''}
+                placeholderTextColor={'#BBB'}
+              />
+            </View>
+            <View style={styles.inputDiv}>
+              <TextInput
+                secureTextEntry={true}
+                style={styles.inputFiled}
+                placeholder="New Password"
+                placeholderTextColor={'#BBB'}
+              />
+            </View>
+            <View style={styles.inputDiv}>
+              <TextInput
+                secureTextEntry={true}
+                style={styles.inputFiled}
+                placeholder="Confirm Password"
+                placeholderTextColor={'#BBB'}
+              />
+            </View>
+            <TouchableOpacity
+              style={styles.updateBtn}
+              onPress={() => {
+                updateInfo()
+                // isShowIndicator(true);
+                // setTimeout(() => {
+                //   // isShowIndicator(false);
+                //   isDone(true);
+                //   setTimeout(() => {
+                //     navigation.navigate('Home');
+                //   }, 2000);
+                // }, 5000);
+              }}>
+              <Text style={styles.updateText}>Update</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </View>
@@ -124,6 +213,7 @@ const styles = StyleSheet.create({
   clientImg: {
     width: 50,
     height: 50,
+    borderRadius: 25,
     marginRight: 15,
   },
   userImgName: {
@@ -136,10 +226,12 @@ const styles = StyleSheet.create({
   userName: {
     fontFamily: fontFamily.POPPINS_SEMI,
     fontSize: 18,
+    color: '#111',
   },
   userEmail: {
     fontFamily: fontFamily.POPPINS_LIGHT,
     fontSize: 14,
+    color: '#111',
   },
   editIcon: {
     width: 20,
@@ -201,6 +293,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontFamily: fontFamily.POPPINS_REGULAR,
     fontSize: 14,
+    color: '#111',
   },
   inputDiv: {
     marginBottom: 15,

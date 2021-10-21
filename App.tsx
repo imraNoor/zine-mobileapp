@@ -1,51 +1,30 @@
-import React,{Fragment} from 'react';
-import {StyleSheet,View, StatusBar} from 'react-native';
+import React from 'react';
+import {View, StatusBar} from 'react-native';
 import {NavigationContainer} from '@react-navigation/native';
-import {createStackNavigator} from '@react-navigation/stack';
-import MainNavigator from './navigation/MainNavigator';
+import {PersistGate} from 'redux-persist/integration/react';
 import FlashMessage from 'react-native-flash-message';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
-import rootReducer from './redux/rootreducer';
-import thunk from "redux-thunk";
-import { Provider } from 'react-redux'
-import {createStore,applyMiddleware,compose} from 'redux';
-
-const composeEnhancers = window.REDUX_DEVTOOLS_EXTENSION_COMPOSE || compose;
-const store = createStore(rootReducer, composeEnhancers(applyMiddleware(thunk)));
-const Stack = createStackNavigator();
-function App() {
-  return (
-    <Provider store={store}>
-      <View style={{flex:1}} >
-        <StatusBar translucent={true} backgroundColor="#00000000"/>
-        <SafeAreaProvider>
-        <NavigationContainer>
-          <MainNavigator />
-        </NavigationContainer>
-        </SafeAreaProvider>
-        <FlashMessage position="top" />
-      </View>
-    </Provider>
-  );
-}
-
-const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-});
+import {Provider} from 'react-redux';
+import MainNavigator from './navigation/MainNavigator';
+// import rootReducer from './redux/rootreducer';
+// import thunk from 'redux-thunk';
+// import {createStore, applyMiddleware, compose} from 'redux';
+import {Store, persistor} from './_redux';
+//const store = createStore(rootReducer, compose(applyMiddleware(thunk)));
+const App = () => (
+  <View style={{flex: 1}}>
+    <StatusBar translucent={true} backgroundColor="#00000000" />
+    <SafeAreaProvider>
+      <Provider store={Store}>
+        <PersistGate loading={null} persistor={persistor}>
+          <NavigationContainer>
+            <MainNavigator />
+          </NavigationContainer>
+        </PersistGate>
+      </Provider>
+    </SafeAreaProvider>
+    <FlashMessage position="top" />
+  </View>
+);
 
 export default App;

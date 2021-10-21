@@ -11,7 +11,7 @@ import {
 import fontFamily from '../constants/fontFamily';
 import LinearGradient from 'react-native-linear-gradient';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
-var backIcon = require('../assets/img/back.png');
+const backIcon = require('../assets/img/back.png');
 function MainHeader({
   navigation = null,
   title = '',
@@ -35,7 +35,7 @@ function MainHeader({
         <View>
           <Text style={styles.screenTitle}>{title}</Text>
         </View>
-        <View style={{width: 48}}></View>
+        <View style={{width: 48}} />
       </LinearGradient>
     </View>
   );
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   screenTitle: {
-    color: '#fff',
+    color: '#111',
     fontSize: 16,
     fontFamily: fontFamily.POPPINS_REGULAR,
   },

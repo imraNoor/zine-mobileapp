@@ -36,8 +36,11 @@ const MainNavigator = () => {
         options={{
           unmountOnBlur: true,
           headerShown: false,
-          tabBarIcon: ({color}) => (
-            <Image source={message} style={{width: 20, height: 20}} />
+          tabBarIcon: ({color, focused}) => (
+            <Image
+              source={focused ? message : message}
+              style={{width: 20, height: 20}}
+            />
           ),
         }}
       />

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,23 +7,46 @@ import {
   ScrollView,
 } from 'react-native';
 import {LocaleConfig, Calendar} from 'react-native-calendars';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import fontFamily from '../constants/fontFamily';
 import Mainheader from '../components/header';
 import {monthArr} from '../lib/utilts';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import APIs from '../lib/api';
 var dateArray = [
   {date: '2021-10-14'},
   {date: '2021-10-13'},
   {date: '2021-10-12'},
 ];
 
-const getDate = date => {
-  console.log(date);
-};
-
-function CalenderScreen({navigation}) {
+const CalenderScreen = ({navigation}: {navigation: any}) => {
   const {bottom} = useSafeAreaInsets();
-  const [selectDate, isSelectDate] = useState();
+  const [selectDate, isSelectDate] = useState(new Date());
+  const [appointments, setAppointments] = useState([]);
+  const [currentApp, setCurrentApps] = useState([]);
+  const getDate = date => {
+    console.log('That', date);
+    const NewDate = new Date(date.dateString);
+    isSelectDate(NewDate);
+    getAppo(date);
+  };
+
+  useEffect(() => {
+    APIs.GetAllAppointments()
+      .then(res => {
+        if (res.success) {
+          setAppointments(res.data);
+        }
+        console.log('ff', JSON.stringify(res));
+      })
+      .finally(() => {});
+  }, []);
+  const getAppo = dte => {
+    const d = appointments.filter(
+      item => item.date_time.split(' ')[0] === dte.dateString,
+    );
+    setCurrentApps(d);
+  };
+  console.log('ddd', currentApp);
   return (
     <View style={[styles.mainContainer]}>
       <Mainheader title="Calendar" navigation={navigation} />
@@ -43,7 +66,7 @@ function CalenderScreen({navigation}) {
           textSectionTitleColor: '#5F5F5F',
         }}
         // Initially visible month. Default = Date()
-        current={'2021-10-11'}
+        // current={selectDate}
         // Minimum date that can be selected, dates before minDate will be grayed out. Default = undefined
         // minDate={'2012-05-10'}
         // Maximum date that can be selected, dates after maxDate will be grayed out. Default = undefined
@@ -102,8 +125,8 @@ function CalenderScreen({navigation}) {
         // Enable the option to swipe between months. Default = false
         enableSwipeMonths={true}
         markingType={'custom'}
-        markedDates={dateArray.reduce((pre, cur) => {
-          pre[cur.date] = {
+        markedDates={appointments.reduce((pre, cur) => {
+          pre[cur.date_time.split(' ')[0]] = {
             customStyles: {
               container: {
                 backgroundColor: '#008DD5',
@@ -120,95 +143,35 @@ function CalenderScreen({navigation}) {
       />
       <ScrollView contentContainerStyle={{paddingBottom: bottom + 63}}>
         <View style={styles.appointmentView}>
-          <TouchableOpacity onPress={() => navigation.navigate('Appoinment')}>
-            <View style={styles.currentEvent}>
-              <View style={styles.appointmentData}>
-                <Text style={styles.currentTrainingText}>Training</Text>
-                <Text style={styles.currentTimeText}>11.30 pm</Text>
-              </View>
-              <View>
-                <Text style={styles.currentDateText}>9</Text>
-                <Text style={styles.currentDateText}>Oct</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Appoinment')}>
-            <View style={styles.appointmentMulti}>
-              <View style={styles.appointmentData}>
-                <Text style={styles.trainingText}>Training</Text>
-                <Text style={styles.timeText}>11.30 pm</Text>
-              </View>
-              <View>
-                <Text style={styles.dateText}>9</Text>
-                <Text style={styles.dateText}>Oct</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <View style={styles.appointmentMulti}>
-              <View style={styles.appointmentData}>
-                <Text style={styles.trainingText}>Training</Text>
-                <Text style={styles.timeText}>11.30 pm</Text>
-              </View>
-              <View>
-                <Text style={styles.dateText}>9</Text>
-                <Text style={styles.dateText}>Oct</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <View style={styles.appointmentMulti}>
-              <View style={styles.appointmentData}>
-                <Text style={styles.trainingText}>Training</Text>
-                <Text style={styles.timeText}>11.30 pm</Text>
-              </View>
-              <View>
-                <Text style={styles.dateText}>9</Text>
-                <Text style={styles.dateText}>Oct</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <View style={styles.appointmentMulti}>
-              <View style={styles.appointmentData}>
-                <Text style={styles.trainingText}>Training</Text>
-                <Text style={styles.timeText}>11.30 pm</Text>
-              </View>
-              <View>
-                <Text style={styles.dateText}>9</Text>
-                <Text style={styles.dateText}>Oct</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <View style={styles.appointmentMulti}>
-              <View style={styles.appointmentData}>
-                <Text style={styles.trainingText}>Training</Text>
-                <Text style={styles.timeText}>11.30 pm</Text>
-              </View>
-              <View>
-                <Text style={styles.dateText}>9</Text>
-                <Text style={styles.dateText}>Oct</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-          <TouchableOpacity>
-            <View style={styles.appointmentMulti}>
-              <View style={styles.appointmentData}>
-                <Text style={styles.trainingText}>Training</Text>
-                <Text style={styles.timeText}>11.30 pm</Text>
-              </View>
-              <View>
-                <Text style={styles.dateText}>9</Text>
-                <Text style={styles.dateText}>Oct</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
+          {currentApp.map((item, idx) => {
+            const dte = item.date_time.split(' ')[0].split('-');
+            const timx = item.date_time.split(' ')[1].split(':');
+            return (
+              <TouchableOpacity
+                key={'_' + item.id + '_'}
+                onPress={() => navigation.navigate('Appoinment', {item})}>
+                <View style={styles.currentEvent}>
+                  <View style={styles.appointmentData}>
+                    <Text style={styles.currentTrainingText}>{item.type}</Text>
+                    <Text style={styles.currentTimeText}>
+                      {timx[0]}:{timx[1]}
+                    </Text>
+                  </View>
+                  <View>
+                    <Text style={styles.currentDateText}>{dte[2]}</Text>
+                    <Text style={styles.currentDateText}>
+                      {monthArr[dte[1]]}
+                    </Text>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            );
+          })}
         </View>
       </ScrollView>
     </View>
   );
-}
+};
 export default CalenderScreen;
 
 const styles = StyleSheet.create({

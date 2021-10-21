@@ -27,7 +27,7 @@ export const adminLogin = (email: string, password: string) => {
         // console.log("Login :", data)
         if (success) {
           // getData('jjj').then((ddsd)=>{console.log(ddsd)})
-          storeData('token',data.token);
+          storeData('token', data.token);
           //Store Here in memory
           dispatch({
             type: Actions.LOGIN_SUCCESS,
@@ -49,26 +49,25 @@ export const register = (
   password: string,
   c_password: sting,
 ) => {
-  console.log(name, phone, cityName,email, password, c_password);
+  console.log(name, phone, cityName, email, password, c_password);
   return async (dispatch: Function, getState: Function) =>
-
-  APIs.Register({name, email, phone, password, c_password}).then(response => {
-    if (response) {
-      console.log(response)
-      const {success, data, message} = response;
-      if (success) {
-        // getData('jjj').then((ddsd)=>{console.log(ddsd)})
-        // storeData('account'.data);
-        //Store Here in memory
-        dispatch({
-          type: Actions.LOGIN_SUCCESS,
-          payload: response,
-        });
-        return {success};
-      } else {
-        console.log("errow")
-        return data;
+    APIs.Register({name, email, phone, password, c_password}).then(response => {
+      if (response) {
+        console.log(response);
+        const {success, data, message} = response;
+        if (success) {
+          // getData('jjj').then((ddsd)=>{console.log(ddsd)})
+          // storeData('account'.data);
+          //Store Here in memory
+          dispatch({
+            type: Actions.LOGIN_SUCCESS,
+            payload: response,
+          });
+          return {success};
+        } else {
+          console.log('errow');
+          return data;
+        }
       }
-    }
-  });
+    });
 };

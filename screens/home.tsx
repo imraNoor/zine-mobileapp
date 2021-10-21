@@ -2,7 +2,6 @@ import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   ImageBackground,
   Image,
@@ -10,38 +9,21 @@ import {
   ScrollView,
   Modal,
 } from 'react-native';
+import {useSelector, useDispatch} from 'react-redux';
+import ACTIONS from '../_redux/actions';
 import fontFamily from '../constants/fontFamily';
-import LottieView from 'lottie-react-native';
-import {connect} from 'react-redux';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { CommonActions } from '@react-navigation/native';
-var header = require('../assets/img/header.png');
-var logout = require('../assets/img/logout.png');
-var compain = require('../assets/img/compain.png');
-var calender = require('../assets/img/calender.png');
-var chat = require('../assets/img/chat.png');
-var buy = require('../assets/img/buy.png');
+const header = require('../assets/img/header.png');
+const logout = require('../assets/img/logout.png');
+const compain = require('../assets/img/compain.png');
+const calender = require('../assets/img/calender.png');
+const chat = require('../assets/img/chat.png');
+const buy = require('../assets/img/buy.png');
 
-const getData = async (key: string) => {
-  try {
-    const value = await AsyncStorage.getItem(key);
-    if (value !== null) {
-      console.log('Valu', value);
-      return value;
-    }
-  } catch (e) {
-    // error reading value
-  }
-};
-function HomeScreen({navigation, token}) {
+function HomeScreen({navigation}: {navigation: any}) {
+  const {loggedIn, detail} = useSelector(({USER}) => USER);
   const [visible, isVisible] = useState(false);
   const [loader, isLoader] = useState(true);
-  const [uToken, setUToken] = useState('');
-  useEffect(() => {
-    getData('token').then(userToken => {
-      userToken && setUToken(userToken);
-    }).finally(()=>{  isLoader(false)});
-  }, []);
+  const dispatch = useDispatch();
   return (
     <View style={styles.mainContainer}>
       <View style={styles.header}>
@@ -50,7 +32,7 @@ function HomeScreen({navigation, token}) {
           resizeMode="cover"
           style={styles.image}>
           <View style={styles.profileText}>
-            <Text style={styles.userName}>Hi, John Doe</Text>
+            <Text style={styles.userName}>Hi, {detail?.name}</Text>
             <Text style={styles.welcomeText}>Welcome to Our World</Text>
           </View>
           <View style={styles.imgView}>
@@ -86,7 +68,9 @@ function HomeScreen({navigation, token}) {
           </TouchableOpacity>
         </View>
         <View style={styles.innerView}>
-          <TouchableOpacity style={styles.commonDiv}>
+          <TouchableOpacity
+            style={styles.commonDiv}
+            onPress={() => navigation.navigate('Message')}>
             <View style={styles.imgDiv}>
               <Image source={chat} style={styles.commonImg} />
             </View>
@@ -114,57 +98,37 @@ function HomeScreen({navigation, token}) {
             alignItems: 'center',
             backgroundColor: '#00000088',
           }}>
-          {loader ? (
-            <LottieView
-              source={require('../assets/lf30_editor_dsl3jbcy.json')}
-              style={{width: 150, height: 150}}
-              autoPlay
-              loop
-            />
-          ) : (
-            <View style={styles.modalView}>
-              <Text style={styles.modalTitle}>Do you Want to LogOut?</Text>
-              <View style={styles.btnView}>
-                <TouchableOpacity style={styles.cancelBtn}>
-                  <Text style={styles.cancelText}>No</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={styles.cancelBtn}
-                  onPress={() => {
-                    isLoader(true);
-                    setTimeout(() => {
-                      AsyncStorage.removeItem("token");
-                      isVisible(false);
-                      isLoader(false);
-                      navigation.dispatch(
-                        CommonActions.reset({
-                          index: 0,
-                          routes: [
-                            { name: 'Spalsh' },
-                            
-                          ],
-                        })
-                      );
-                    }, 2000);
-                  }}>
-                  <Text style={styles.cancelText}>Yes</Text>
-                </TouchableOpacity>
-              </View>
+          <View style={styles.modalView}>
+            <Text style={styles.modalTitle}>Do you Want to LogOut?</Text>
+            <View style={styles.btnView}>
+              <TouchableOpacity style={styles.cancelBtn}>
+                <Text style={styles.cancelText}>No</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  isVisible(false);
+                  setTimeout(() => {
+                    //AsyncStorage.removeItem('token');
+                    // navigation.dispatch(
+                    //   CommonActions.reset({
+                    //     index: 0,
+                    //     routes: [{name: 'Spalsh'}],
+                    //   }),
+                    // );
+                    ACTIONS.letLogout()(dispatch);
+                  }, 1000);
+                }}>
+                <Text style={styles.cancelText}>Yes</Text>
+              </TouchableOpacity>
             </View>
-          )}
+          </View>
         </View>
       </Modal>
     </View>
   );
 }
-const mapStateToProps = state => ({
-  token: state.auth.token,
-});
-
-const mapDispatchToProps = dispatch => ({
-  loginHandler: (email, pass) => dispatch(adminLogin(email, pass)),
-});
-export default connect(mapStateToProps, mapDispatchToProps)(HomeScreen);
+export default HomeScreen;
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -182,7 +146,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   profileText: {
-    paddingTop: 50,
+    paddingTop: 80,
     paddingLeft: 30,
   },
   logoutImg: {
@@ -190,16 +154,16 @@ const styles = StyleSheet.create({
     height: 20,
   },
   imgView: {
-    paddingTop: 50,
+    paddingTop: 100,
     paddingRight: 30,
   },
   userName: {
-    fontSize: 13,
+    fontSize: 17,
     color: '#fff',
     fontFamily: fontFamily.POPPINS_REGULAR,
   },
   welcomeText: {
-    fontSize: 16,
+    fontSize: 22,
     fontFamily: fontFamily.POPPINS_SEMI,
     color: '#fff',
   },

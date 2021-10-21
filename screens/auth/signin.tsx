@@ -1,3 +1,4 @@
+/* eslint-disable react-native/no-inline-styles */
 import React, {useState, useEffect} from 'react';
 import {
   View,
@@ -10,18 +11,26 @@ import {
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import fontFamily from '../../constants/fontFamily';
-import {connect} from 'react-redux';
-import {adminLogin} from '../../redux/action/authAction';
+import Actions from '../../_redux/actions';
+//import {connect} from 'react-redux';
+//import {adminLogin} from '../../redux/action/authAction';
+import {useDispatch} from 'react-redux';
 import Loader from '../../components/loader';
 import checkEmail from '../../lib/utilts/checkEmail';
 import images from '../../constants/images';
 import Hook from '../../lib/hook';
+import APIs from '../../lib/api';
+const logo = require('../../assets/img/Logo2.png');
+const mail = require('../../assets/img/mail.png');
+const lock = require('../../assets/img/lock.png');
 
-var logo = require('../../assets/img/Logo2.png');
-var mail = require('../../assets/img/mail.png');
-var lock = require('../../assets/img/lock.png');
-
-function SignIn({navigation, loginHandler}) {
+const SignIn = ({
+  navigation,
+  loginHandler,
+}: {
+  navigation: any;
+  loginHandler: Function;
+}) => {
   const [kbHeight] = Hook.useKeyboard();
   const [showIndicator, isShowIndicator] = useState(false);
   const [email, setEmail] = useState('');
@@ -30,7 +39,7 @@ function SignIn({navigation, loginHandler}) {
   const [done, isDone] = useState(false);
   const [emailErr, setEmailErr] = useState('');
   const [passErr, setPassErr] = useState('');
-
+  const dispatch = useDispatch();
   const postSignInHandler = () => {
     let checkerEmail = checkEmail(email);
     let checkerPasword = checkPassword(password);
@@ -38,22 +47,31 @@ function SignIn({navigation, loginHandler}) {
     checkerEmail
       ? checkerPasword &&
         (isShowIndicator(true),
-        loginHandler(email, password).then(res => {
-          if (res) {
-            if (res.error) {
-              Alert.alert(res.error);
-              isShowIndicator(false);
-              isDone(false);
-            } else {
-              isDone(true);
-              setTimeout(() => navigation.replace('BottomTab'), 2000);
+        APIs.Login({email, password})
+          .then((res: any) => {
+            if (res) {
+              console.log('ddd', JSON.stringify(res));
+              if (res.success) {
+                isDone(true);
+                setTimeout(
+                  () => Actions.letAuthorizeUser(res.data)(dispatch),
+                  2000,
+                );
+                //Actions.letAuthorizeUser()(dispatch);
+                //setTimeout(() => navigation.replace('BottomTab'), 2000);
+              } else {
+                res.data.email && setEmailErr(res.data.email[0]);
+                res.data.password && setEmailErr(res.data.password[0]);
+                isShowIndicator(false);
+                isDone(false);
+              }
             }
-          }
-        }))
+          })
+          .finally(() => {}))
       : setEmailErr('Please Enter Your Correct Email !');
   };
-  const checkPassword = password => {
-    if (password.length > 8) {
+  const checkPassword = (passwordx: string) => {
+    if (passwordx.length >= 8) {
       setPassErr('');
       return true;
     } else {
@@ -61,8 +79,8 @@ function SignIn({navigation, loginHandler}) {
       return false;
     }
   };
-  const showPassword = passwordShow => {
-    setPasswordShow(!passwordShow);
+  const showPassword = (passwordShowx: boolean) => {
+    setPasswordShow(!passwordShowx);
   };
   return (
     <View style={styles.mainContainer}>
@@ -73,7 +91,7 @@ function SignIn({navigation, loginHandler}) {
           styles.linearGradient,
           {justifyContent: kbHeight ? 'flex-start' : 'flex-end'},
         ]}>
-        {kbHeight == 0 && (
+        {kbHeight === 0 && (
           <View style={styles.logoBox}>
             <Image source={logo} />
           </View>
@@ -94,10 +112,12 @@ function SignIn({navigation, loginHandler}) {
                 <Image style={styles.inputImg} source={mail} />
               </View>
               <TextInput
+                placeholderTextColor="#444"
                 onChangeText={e => {
                   setEmail(e);
                   emailErr && setEmailErr('');
                 }}
+                placeholder="Email"
                 value={email}
                 style={styles.inputFiled}
               />
@@ -105,13 +125,14 @@ function SignIn({navigation, loginHandler}) {
             {Boolean(emailErr) && (
               <Text style={styles.errorText}>{emailErr}</Text>
             )}
-
             <Text style={styles.lableText}>Password</Text>
             <View style={[styles.inputDiv, passErr && styles.errorFiled]}>
               <View style={styles.imgView}>
                 <Image style={styles.inputImg} source={lock} />
               </View>
               <TextInput
+                placeholder="Password"
+                placeholderTextColor="#444"
                 onChangeText={e => {
                   setPassword(e);
                   passErr && setPassErr('');
@@ -125,11 +146,10 @@ function SignIn({navigation, loginHandler}) {
                   onPress={() => {
                     showPassword(passwordShow);
                   }}>
-                  {passwordShow ? (
-                    <Image style={styles.inputImg} source={images.unhide} />
-                  ) : (
-                    <Image style={styles.inputImg} source={images.hide} />
-                  )}
+                  <Image
+                    style={styles.inputImg}
+                    source={passwordShow ? images.unhide : images.hide}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
@@ -142,8 +162,7 @@ function SignIn({navigation, loginHandler}) {
 
             <TouchableOpacity
               style={styles.submitButton}
-              // onPress={() => navigation.navigate('BottomTab')}
-              onPress={() => postSignInHandler()}>
+              onPress={postSignInHandler}>
               <Text style={styles.buttonText}>Submit</Text>
             </TouchableOpacity>
 
@@ -157,16 +176,16 @@ function SignIn({navigation, loginHandler}) {
       </LinearGradient>
     </View>
   );
-}
-const mapStateToProps = state => ({
-  isLogin: state.auth.isLogin,
-  isLoading: state.app.isLoading,
-});
+};
+// const mapStateToProps = ({auth, app}) => ({
+//   isLogin: auth.isLogin,
+//   isLoading: app.isLoading,
+// });
 
-const mapDispatchToProps = dispatch => ({
-  loginHandler: (email, pass) => dispatch(adminLogin(email, pass)),
-});
-export default connect(mapStateToProps, mapDispatchToProps)(SignIn);
+// const mapDispatchToProps = dispatch => ({
+//   loginHandler: (email, pass) => dispatch(adminLogin(email, pass)),
+// });
+export default SignIn;
 
 const styles = StyleSheet.create({
   mainContainer: {
@@ -180,7 +199,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     width: '100%',
     padding: 20,
-    flex: 1
+    flex: 1,
   },
   logoBox: {
     height: '40%',
@@ -219,6 +238,7 @@ const styles = StyleSheet.create({
   lableText: {
     paddingLeft: 10,
     fontFamily: fontFamily.POPPINS_REGULAR,
+    color: '#222',
   },
   formDiv: {
     marginTop: 20,
@@ -226,6 +246,7 @@ const styles = StyleSheet.create({
   inputFiled: {
     width: '70%',
     fontFamily: fontFamily.POPPINS_REGULAR,
+    color: '#111',
   },
   submitButton: {
     width: '100%',

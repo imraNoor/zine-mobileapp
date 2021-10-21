@@ -7,10 +7,10 @@ import {
   TextInput,
   TouchableOpacity,
 } from 'react-native';
+import Stars from 'react-native-stars';
 import fontFamily from '../constants/fontFamily';
 import Mainheader from '../components/header';
 import Loader from '../components/loader';
-import Stars from 'react-native-stars';
 import images from '../constants/images';
 
 function AppointmentScreen({navigation}: {navigation: any}) {
