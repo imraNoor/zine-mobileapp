@@ -12,21 +12,18 @@ import fontFamily from '../constants/fontFamily';
 import Mainheader from '../components/header';
 import {monthArr} from '../lib/utilts';
 import APIs from '../lib/api';
-var dateArray = [
-  {date: '2021-10-14'},
-  {date: '2021-10-13'},
-  {date: '2021-10-12'},
-];
 
 const CalenderScreen = ({navigation}: {navigation: any}) => {
   const {bottom} = useSafeAreaInsets();
-  const [selectDate, isSelectDate] = useState(new Date());
+  //const [selectDate, isSelectDate] = useState(new Date());
   const [appointments, setAppointments] = useState([]);
   const [currentApp, setCurrentApps] = useState([]);
+  const [loading, setLoading] = useState(true);
   const getDate = date => {
-    console.log('That', date);
-    const NewDate = new Date(date.dateString);
-    isSelectDate(NewDate);
+    //console.log('That', date);
+    //const NewDate = new Date(date.dateString);
+
+    //isSelectDate(NewDate);
     getAppo(date);
   };
 
@@ -35,8 +32,19 @@ const CalenderScreen = ({navigation}: {navigation: any}) => {
       .then(res => {
         if (res.success) {
           setAppointments(res.data);
+          const NewDate = new Date();
+          const curDate =
+            NewDate.getFullYear() +
+            '-' +
+            (NewDate.getMonth() + 1) +
+            '-' +
+            NewDate.getDate();
+          const d = res.data.filter(
+            item => item.date_time.split(' ')[0] === curDate,
+          );
+          setCurrentApps(d);
         }
-        console.log('ff', JSON.stringify(res));
+        //console.log('ff', JSON.stringify(res));
       })
       .finally(() => {});
   }, []);
@@ -46,7 +54,7 @@ const CalenderScreen = ({navigation}: {navigation: any}) => {
     );
     setCurrentApps(d);
   };
-  console.log('ddd', currentApp);
+  //console.log('ddd', currentApp);
   return (
     <View style={[styles.mainContainer]}>
       <Mainheader title="Calendar" navigation={navigation} />
@@ -75,13 +83,13 @@ const CalenderScreen = ({navigation}: {navigation: any}) => {
         onDayPress={getDate}
         // Handler which gets executed on day long press. Default = undefined
         onDayLongPress={day => {
-          console.log('selected day', day);
+         // console.log('selected day', day);
         }}
         // Month format in calendar title. Formatting values: http://arshaw.com/xdate/#Formatting
         monthFormat={'yyyy MM'}
         // Handler which gets executed when visible month changes in calendar. Default = undefined
         onMonthChange={month => {
-          console.log('month changed', month);
+          //console.log('month changed', month);
         }}
         // Hide month navigation arrows. Default = false
         hideArrows={false}

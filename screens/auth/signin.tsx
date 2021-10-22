@@ -50,7 +50,7 @@ const SignIn = ({
         APIs.Login({email, password})
           .then((res: any) => {
             if (res) {
-              console.log('ddd', JSON.stringify(res));
+              //console.log('ddd', JSON.stringify(res));
               if (res.success) {
                 isDone(true);
                 setTimeout(

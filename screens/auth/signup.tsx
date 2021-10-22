@@ -63,7 +63,7 @@ function SignUp({navigation}: {navigation: any}) {
           c_password: confirmPassword,
         }).then(res => {
           if (res) {
-            console.log('RES', res);
+          //  console.log('RES', res);
             if (res.success) {
               isDone(true);
               setTimeout(() => {
@@ -78,7 +78,7 @@ function SignUp({navigation}: {navigation: any}) {
               }, 2000);
             } else {
               isShowIndicator(false);
-              console.log(res);
+             // console.log(res);
               res.email && setEmailErr(res.email[0]);
               res.c_password && setCPassErr(res.c_password[0]);
               res.password && setPassErr(res.password[0]);

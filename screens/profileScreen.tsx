@@ -23,17 +23,26 @@ function ProfileScreen({navigation}: {navigation: any}) {
   const dispatch = useDispatch();
   const [done, isDone] = useState(false);
   const [password, setPassword] = useState('');
+  const [passwordErr, setPasswordErr] = useState('');
+  const [cPasswordErr, setCPasswordErr] = useState('');
   const [cPassword, setCPassword] = useState('');
   const [name, setName] = useState(detail.name);
+  const [nameErr, setNameErr] = useState('');
   const [phone, setphone] = useState(
     detail.phone_number ? detail.phone_number : '',
   );
   useEffect(() => {}, []);
   const updateInfo = () => {
-    if (password && cPassword !== password) {
+    if (password && (cPassword !== password || password.length < 8)) {
+      password.length < 8 &&
+        (setCPasswordErr('Password must be greater then 7 characters'),
+        setPasswordErr('Password must be greater then 7 characters'));
+      cPassword !== password &&
+        setCPasswordErr('confirm Password must match password');
       return false;
     }
     if (name.length < 3) {
+      setNameErr('minimum 3 characters');
       return false;
     }
     APIs.UpdateInfo(
@@ -42,7 +51,7 @@ function ProfileScreen({navigation}: {navigation: any}) {
         : {name, phone_number: phone},
     )
       .then(ee => {
-        console.log('fff', JSON.stringify(ee));
+        //console.log('fff', JSON.stringify(ee));
       })
       .finally(() => {});
   };
@@ -80,7 +89,7 @@ function ProfileScreen({navigation}: {navigation: any}) {
                                 Actions.refreshProfile(locDetail)(dispatch);
                               }
                             }
-                            console.log('res', JSON.stringify(res));
+                            // console.log('res', JSON.stringify(res));
                           })
                           .finally(() => {});
                       }
@@ -136,9 +145,15 @@ function ProfileScreen({navigation}: {navigation: any}) {
                 style={styles.inputFiled}
                 placeholder="User Name"
                 value={name}
-                onChangeText={setName}
+                onChangeText={txt => {
+                  setName(txt);
+                  nameErr && setNameErr('');
+                }}
                 placeholderTextColor={'#BBB'}
               />
+              {Boolean(nameErr) && (
+                <Text style={styles.errorText}>{nameErr}</Text>
+              )}
             </View>
             <View style={styles.inputDiv}>
               <TextInput
@@ -161,24 +176,40 @@ function ProfileScreen({navigation}: {navigation: any}) {
             </View>
             <View style={styles.inputDiv}>
               <TextInput
+                value={password}
+                onChangeText={txt => {
+                  setPassword(txt);
+                  passwordErr && setPasswordErr('');
+                }}
                 secureTextEntry={true}
                 style={styles.inputFiled}
                 placeholder="New Password"
                 placeholderTextColor={'#BBB'}
               />
+              {Boolean(passwordErr) && (
+                <Text style={styles.errorText}>{passwordErr}</Text>
+              )}
             </View>
             <View style={styles.inputDiv}>
               <TextInput
+                value={cPassword}
+                onChangeText={txt => {
+                  setCPassword(txt);
+                  cPasswordErr && setCPasswordErr('');
+                }}
                 secureTextEntry={true}
                 style={styles.inputFiled}
                 placeholder="Confirm Password"
                 placeholderTextColor={'#BBB'}
               />
+              {Boolean(cPasswordErr) && (
+                <Text style={styles.errorText}>{cPasswordErr}</Text>
+              )}
             </View>
             <TouchableOpacity
               style={styles.updateBtn}
               onPress={() => {
-                updateInfo()
+                updateInfo();
                 // isShowIndicator(true);
                 // setTimeout(() => {
                 //   // isShowIndicator(false);
@@ -199,6 +230,11 @@ function ProfileScreen({navigation}: {navigation: any}) {
 export default ProfileScreen;
 
 const styles = StyleSheet.create({
+  errorText: {
+    color: 'red',
+    fontFamily: fontFamily.POPPINS_SEMI,
+    fontSize: 10,
+  },
   mainContainer: {
     flex: 1,
     backgroundColor: '#fff',

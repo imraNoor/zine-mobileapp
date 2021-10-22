@@ -1,4 +1,4 @@
-import React, {useState, Fragment} from 'react';
+import React, {useState, Fragment, useEffect} from 'react';
 import {
   View,
   Text,
@@ -12,44 +12,82 @@ import fontFamily from '../constants/fontFamily';
 import Mainheader from '../components/header';
 import Loader from '../components/loader';
 import images from '../constants/images';
-
-function AppointmentScreen({navigation}: {navigation: any}) {
-  const [starUpdate, isStarUpdate] = useState(0);
+import {monthArr} from '../lib/utilts';
+import APIs from '../lib/api';
+function AppointmentScreen({navigation, route}: {navigation: any; route: any}) {
+  const {item} = route.params;
   const [showIndicator, isShowIndicator] = useState(false);
+  const [comment, setComment] = useState('');
+  const [starUpdate, isStarUpdate] = useState(0);
   const [done, isDone] = useState(false);
+  const [dataToShow, setData] = useState(item);
+  useEffect(() => {
+    APIs.GetAppointmentDetail(item.id)
+      .then(Res => {
+        if (Res.success) {
+          setData(Res.data[0]);
+
+          isStarUpdate(
+            Res.data[0].ratings.length ? Res.data[0].ratings[0].rating : 0,
+          );
+          setComment(Res.data[0].user_review ? Res.data[0].user_review : '');
+          // console.log('Ínfo', Res.data[0].ratings[0].rating);
+          // console.log('Ínfo', Res.data[0].user_review);
+        }
+      })
+      .finally(() => {});
+  }, []);
+  const SubmitReview = () => {
+    APIs.GiveReview({id: item.id, rate: starUpdate, user_review: comment})
+      .then(() => {})
+      .finally(() => {
+        isShowIndicator(true);
+        setTimeout(() => {
+          isShowIndicator(false);
+          isDone(true);
+          setTimeout(() => {
+            navigation.goBack();
+          }, 2000);
+        }, 2000);
+      });
+  };
+
+  const [date, time] = dataToShow.date_time.split(' ');
+  const splitedTime = time.split(':');
+  const splitedDate = date.split('-');
   return (
     <Fragment>
       <View style={styles.mainContainer}>
         <Loader visible={showIndicator} done={done} />
         <Mainheader title="Appointment" navigation={navigation} />
-        <ScrollView contentContainerStyle={{paddingBottom: 100,padding: 20,}}>
+        <ScrollView contentContainerStyle={{paddingBottom: 100, padding: 20}}>
           <View>
             <View style={[styles.profileView, styles.commonDiv]}>
               <View style={styles.userDetail}>
                 <View style={styles.userImgName}>
                   <View>
-                    <Text style={styles.userName}>Training</Text>
-                    <Text style={styles.userEmail}>Time: 11.30 pm</Text>
+                    <Text style={styles.userName}>{dataToShow.type}</Text>
+                    <Text style={styles.userEmail}>
+                      Time: {splitedTime[0]}:{splitedTime[2]}
+                    </Text>
                   </View>
                 </View>
                 <View style={{alignItems: 'center'}}>
-                  <Text style={styles.dateText}>9</Text>
-                  <Text style={styles.dateText}>Oct</Text>
+                  <Text style={styles.dateText}>{splitedDate[2]}</Text>
+                  <Text style={styles.dateText}>
+                    {monthArr[splitedDate[1]]}
+                  </Text>
                 </View>
               </View>
-              <Text style={styles.trainingText}>
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                Mimalesuada gravida id vel pellentesque elit. Ullamcorper
-                quisnisi, placerat accumsan, nisi, purus.
-              </Text>
+              <Text style={styles.trainingText}>{dataToShow.comments}</Text>
             </View>
           </View>
           <View style={styles.ratingView}>
             <Text style={styles.mainTitle}>Satisfaction</Text>
             <Stars
-              disabled={false}
+              disabled={Boolean(dataToShow.ratings?.length)}
               half={true}
-              default={1.5}
+              default={starUpdate}
               spacing={10}
               count={5}
               starSize={35}
@@ -58,21 +96,19 @@ function AppointmentScreen({navigation}: {navigation: any}) {
               emptyStar={images.emptyStar}
               update={(val: any) => isStarUpdate(val)}
             />
-            <TextInput style={styles.inputFiled} />
-            <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={() => {
-                isShowIndicator(true);
-                setTimeout(() => {
-                  // isShowIndicator(false);
-                  isDone(true);
-                  setTimeout(() => {
-                    navigation.goBack();
-                  }, 2000);
-                }, 5000);
-              }}>
-              <Text style={styles.submitText}>Submit</Text>
-            </TouchableOpacity>
+            <TextInput
+              style={styles.inputFiled}
+              value={comment}
+              editable={!Boolean(dataToShow.ratings?.length)}
+              onChangeText={setComment}
+              placeholder="comment"
+              placeholderTextColor={'#bbb'}
+            />
+            {!Boolean(dataToShow.ratings?.length) && (
+              <TouchableOpacity style={styles.submitBtn} onPress={SubmitReview}>
+                <Text style={styles.submitText}>Submit</Text>
+              </TouchableOpacity>
+            )}
           </View>
         </ScrollView>
       </View>
@@ -106,14 +142,17 @@ const styles = StyleSheet.create({
   userName: {
     fontFamily: fontFamily.POPPINS_SEMI,
     fontSize: 14,
+    color: '#111',
   },
   userEmail: {
     fontFamily: fontFamily.POPPINS_LIGHT,
     fontSize: 12,
+    color: '#111',
   },
   trainingText: {
     fontFamily: fontFamily.POPPINS_REGULAR,
     fontSize: 12,
+    color: '#111',
   },
   userDetail: {
     display: 'flex',
@@ -124,6 +163,7 @@ const styles = StyleSheet.create({
   mainTitle: {
     fontFamily: fontFamily.POPPINS_SEMI,
     fontSize: 16,
+    color: '#111',
   },
   dateText: {
     fontSize: 20,
@@ -150,6 +190,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     fontFamily: fontFamily.POPPINS_REGULAR,
     fontSize: 14,
+    color: '#111',
   },
   submitBtn: {
     width: '100%',
