@@ -38,17 +38,17 @@ function AppointmentScreen({navigation, route}: {navigation: any; route: any}) {
       .finally(() => {});
   }, []);
   const SubmitReview = () => {
+    isShowIndicator(true);
     APIs.GiveReview({id: item.id, rate: starUpdate, user_review: comment})
       .then(() => {})
       .finally(() => {
-        isShowIndicator(true);
         setTimeout(() => {
           isShowIndicator(false);
           isDone(true);
           setTimeout(() => {
             navigation.goBack();
           }, 2000);
-        }, 2000);
+        }, 1000);
       });
   };
 

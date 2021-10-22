@@ -22,6 +22,7 @@ function ProfileScreen({navigation}: {navigation: any}) {
   const {detail} = useSelector(({USER}) => USER);
   const dispatch = useDispatch();
   const [done, isDone] = useState(false);
+
   const [password, setPassword] = useState('');
   const [passwordErr, setPasswordErr] = useState('');
   const [cPasswordErr, setCPasswordErr] = useState('');
@@ -45,15 +46,18 @@ function ProfileScreen({navigation}: {navigation: any}) {
       setNameErr('minimum 3 characters');
       return false;
     }
+    isShowIndicator(true);
+    isDone(false);
     APIs.UpdateInfo(
       password
         ? {name, phone_number: phone, password}
         : {name, phone_number: phone},
-    )
-      .then(ee => {
-        //console.log('fff', JSON.stringify(ee));
-      })
-      .finally(() => {});
+    ).finally(() => {
+      isDone(true);
+      setTimeout(() => {
+        isShowIndicator(false);
+      }, 1000);
+    });
   };
   return (
     <Fragment>
