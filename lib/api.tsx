@@ -90,4 +90,5 @@ export default {
   GetAppointmentDetail,
   GetAllAppointments,
   getServerImage,
+  baseURL
 };

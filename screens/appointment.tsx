@@ -1,4 +1,4 @@
-import React, {useState, Fragment, useEffect} from 'react';
+import React, {useState, Fragment, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -8,34 +8,59 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import Stars from 'react-native-stars';
+import Sound from 'react-native-sound';
 import fontFamily from '../constants/fontFamily';
 import Mainheader from '../components/header';
 import Loader from '../components/loader';
 import images from '../constants/images';
 import {monthArr} from '../lib/utilts';
 import APIs from '../lib/api';
-function AppointmentScreen({navigation, route}: {navigation: any; route: any}) {
+const AppointmentScreen = ({
+  navigation,
+  route,
+}: {
+  navigation: any;
+  route: any;
+}) => {
+  const whoosh = useRef(null);
   const {item} = route.params;
   const [showIndicator, isShowIndicator] = useState(false);
   const [comment, setComment] = useState('');
+  //const [whoosh, setwhoosh] = useState(null);
   const [starUpdate, isStarUpdate] = useState(0);
   const [done, isDone] = useState(false);
   const [dataToShow, setData] = useState(item);
+  const [audioState, setAudioState] = useState('');
+  const [playable, setPlayable] = useState(false);
   useEffect(() => {
     APIs.GetAppointmentDetail(item.id)
       .then(Res => {
         if (Res.success) {
           setData(Res.data[0]);
-
           isStarUpdate(
             Res.data[0].ratings.length ? Res.data[0].ratings[0].rating : 0,
           );
           setComment(Res.data[0].user_review ? Res.data[0].user_review : '');
-          // console.log('Ínfo', Res.data[0].ratings[0].rating);
-          // console.log('Ínfo', Res.data[0].user_review);
+          if (Boolean(Res.data[0].audio)) {
+            console.log('Herre');
+            whoosh.current = new Sound(
+              APIs.baseURL + Res.data[0].audio,
+              undefined,
+              error => {
+                if (error) {
+                  console.log('failed to load the sound', error);
+                  return;
+                }
+                setPlayable(true);
+              },
+            );
+          }
         }
       })
       .finally(() => {});
+    return () => {
+      whoosh.current && whoosh.current.release();
+    };
   }, []);
   const SubmitReview = () => {
     isShowIndicator(true);
@@ -51,7 +76,25 @@ function AppointmentScreen({navigation, route}: {navigation: any; route: any}) {
         }, 1000);
       });
   };
-
+  const PlayIt = () => {
+    if (audioState === '' || audioState === 'Stop') {
+      whoosh.current.play(success => {
+        if (success) {
+          whoosh.current.stop();
+          setAudioState('Stop');
+          console.log('successfully finished playing');
+        } else {
+          console.log('playback failed due to audio decoding errors');
+        }
+      });
+    } else {
+      whoosh.current.stop();
+    }
+    setAudioState(
+      audioState === '' || audioState === 'Stop' ? 'Playing' : 'Stop',
+    );
+  };
+  console.log('hello world', JSON.stringify(dataToShow));
   const [date, time] = dataToShow.date_time.split(' ');
   const splitedTime = time.split(':');
   const splitedDate = date.split('-');
@@ -61,27 +104,38 @@ function AppointmentScreen({navigation, route}: {navigation: any; route: any}) {
         <Loader visible={showIndicator} done={done} />
         <Mainheader title="Appointment" navigation={navigation} />
         <ScrollView contentContainerStyle={{paddingBottom: 100, padding: 20}}>
-          <View>
-            <View style={[styles.profileView, styles.commonDiv]}>
-              <View style={styles.userDetail}>
-                <View style={styles.userImgName}>
-                  <View>
-                    <Text style={styles.userName}>{dataToShow.type}</Text>
-                    <Text style={styles.userEmail}>
-                      Time: {splitedTime[0]}:{splitedTime[2]}
-                    </Text>
-                  </View>
-                </View>
-                <View style={{alignItems: 'center'}}>
-                  <Text style={styles.dateText}>{splitedDate[2]}</Text>
-                  <Text style={styles.dateText}>
-                    {monthArr[splitedDate[1]]}
+          <View style={[styles.profileView, styles.commonDiv]}>
+            <View style={styles.userDetail}>
+              <View style={styles.userImgName}>
+                <View>
+                  <Text style={styles.userName}>{dataToShow.type}</Text>
+                  <Text style={styles.userEmail}>
+                    Time: {splitedTime[0]}:{splitedTime[2]}
                   </Text>
                 </View>
               </View>
-              <Text style={styles.trainingText}>{dataToShow.comments}</Text>
+              <View style={{alignItems: 'center'}}>
+                <Text style={styles.dateText}>{splitedDate[2]}</Text>
+                <Text style={styles.dateText}>{monthArr[splitedDate[1]]}</Text>
+              </View>
             </View>
+            <Text style={styles.trainingText}>{dataToShow.comments}</Text>
           </View>
+          {playable && (
+            <TouchableOpacity
+              onPress={PlayIt}
+              style={{
+                padding: 12,
+                backgroundColor: '#008DD5',
+                borderRadius: 8,
+                width: '30%',
+                alignSelf: 'flex-end',
+              }}>
+              <Text style={{color: '#FFF', fontSize: 17}}>
+                {audioState === '' || audioState === 'Stop' ? 'Play' : 'Stop'}
+              </Text>
+            </TouchableOpacity>
+          )}
           <View style={styles.ratingView}>
             <Text style={styles.mainTitle}>Satisfaction</Text>
             <Stars
@@ -114,7 +168,7 @@ function AppointmentScreen({navigation, route}: {navigation: any; route: any}) {
       </View>
     </Fragment>
   );
-}
+};
 export default AppointmentScreen;
 
 const styles = StyleSheet.create({

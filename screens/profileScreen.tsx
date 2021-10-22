@@ -53,6 +53,9 @@ function ProfileScreen({navigation}: {navigation: any}) {
         ? {name, phone_number: phone, password}
         : {name, phone_number: phone},
     ).finally(() => {
+      Actions.letAuthorizeUser({...detail, name, phone_number: phone})(
+        dispatch,
+      );
       isDone(true);
       setTimeout(() => {
         isShowIndicator(false);
