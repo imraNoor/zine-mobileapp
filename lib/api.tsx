@@ -80,7 +80,14 @@ const GetAllAppointments = () => {
       return response?.data;
     });
 };
-
+const GetAppointmentCounts = () => {
+  return axios
+    .get('/appointment-history', {...getCustomHeader()})
+    .then(({data}: AxiosResponse) => data)
+    .catch(({response}: AxiosError) => {
+      return response?.data;
+    });
+};
 export default {
   Login,
   Register,
@@ -91,4 +98,5 @@ export default {
   GetAllAppointments,
   getServerImage,
   baseURL,
+  GetAppointmentCounts,
 };

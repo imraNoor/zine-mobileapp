@@ -22,7 +22,11 @@ function ProfileScreen({navigation}: {navigation: any}) {
   const {detail} = useSelector(({USER}) => USER);
   const dispatch = useDispatch();
   const [done, isDone] = useState(false);
-
+  const [counts, setCounts] = useState({
+    weeklyAppointments: 0,
+    monthlyAppointments: 0,
+    toDateAppointments: 0,
+  });
   const [password, setPassword] = useState('');
   const [passwordErr, setPasswordErr] = useState('');
   const [cPasswordErr, setCPasswordErr] = useState('');
@@ -32,7 +36,16 @@ function ProfileScreen({navigation}: {navigation: any}) {
   const [phone, setphone] = useState(
     detail.phone_number ? detail.phone_number : '',
   );
-  useEffect(() => {}, []);
+  useEffect(() => {
+    APIs.GetAppointmentCounts()
+      .then(res => {
+        if (res) {
+          const {data} = res;
+          setCounts(data);
+        }
+      })
+      .finally(() => {});
+  }, []);
   const updateInfo = () => {
     if (password && (cPassword !== password || password.length < 8)) {
       password.length < 8 &&
@@ -129,15 +142,21 @@ function ProfileScreen({navigation}: {navigation: any}) {
             <Text style={styles.mainTitle}>Appointments</Text>
             <View style={styles.multiAppoinment}>
               <View style={styles.commonAppointment}>
-                <Text style={styles.valueAppointment}>00</Text>
+                <Text style={styles.valueAppointment}>
+                  {counts.toDateAppointments}
+                </Text>
                 <Text style={styles.durationAppointment}>To Date</Text>
               </View>
               <View style={styles.commonAppointment}>
-                <Text style={styles.valueAppointment}>00</Text>
+                <Text style={styles.valueAppointment}>
+                  {counts.weeklyAppointments}
+                </Text>
                 <Text style={styles.durationAppointment}>To Week</Text>
               </View>
               <View style={styles.commonAppointment}>
-                <Text style={styles.valueAppointment}>00</Text>
+                <Text style={styles.valueAppointment}>
+                  {counts.monthlyAppointments}
+                </Text>
                 <Text style={styles.durationAppointment}>To Month</Text>
               </View>
             </View>
