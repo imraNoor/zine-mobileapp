@@ -9,9 +9,7 @@ const refreshProfile = (payload: any) => (dispatch: Function) => {
   dispatch({type: ActionTypes.USER_AUTHORIZE, payload});
 };
 const letLogout = () => (dispatch: Function) => {
-  // API.ga_Logout().finally(() => {
   dispatch({type: ActionTypes.USER_LOGOUT});
-  // });
 };
 
 export default {

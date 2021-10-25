@@ -16,12 +16,6 @@ export default (
         loggedIn: true,
       };
     }
-    case ActionType.UPDATE_UNREAD_COUNTER: {
-      return {
-        ...state,
-        detail: {...state.detail, unread_notifications_count: payload},
-      };
-    }
     case ActionType.USER_LOGOUT: {
       return InitialUserState;
     }

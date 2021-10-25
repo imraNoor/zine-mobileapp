@@ -1,15 +1,15 @@
-import * as Actions from "../actiontype";
+import * as Actions from '../actiontype';
 
 const initialState = {
-    isLoading:false
+  isLoading: false,
 };
-export default (state = initialState, action)=> {
-    switch (action.type) {
-        case Actions.LOAD_TOGGLE:
-            return{
-                isLoading: !state.isLoading,                
-            }
-            default:
-                return state;
-    }
-}
+export default (state = initialState, action) => {
+  switch (action.type) {
+    case Actions.LOAD_TOGGLE:
+      return {
+        isLoading: !state.isLoading,
+      };
+    default:
+      return state;
+  }
+};

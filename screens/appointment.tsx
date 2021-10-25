@@ -6,6 +6,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import Stars from 'react-native-stars';
 import Sound from 'react-native-sound';
@@ -32,6 +33,7 @@ const AppointmentScreen = ({
   const [dataToShow, setData] = useState(item);
   const [audioState, setAudioState] = useState('');
   const [playable, setPlayable] = useState(false);
+  const [audioAvailabe, setAudioAvailabe] = useState(false);
   useEffect(() => {
     APIs.GetAppointmentDetail(item.id)
       .then(Res => {
@@ -42,7 +44,7 @@ const AppointmentScreen = ({
           );
           setComment(Res.data[0].user_review ? Res.data[0].user_review : '');
           if (Boolean(Res.data[0].audio)) {
-            console.log('Herre');
+            setAudioAvailabe(true);
             whoosh.current = new Sound(
               APIs.baseURL + Res.data[0].audio,
               undefined,
@@ -94,7 +96,7 @@ const AppointmentScreen = ({
       audioState === '' || audioState === 'Stop' ? 'Playing' : 'Stop',
     );
   };
-  console.log('hello world', JSON.stringify(dataToShow));
+  console.log('AppointmentDetail:\n', JSON.stringify(dataToShow));
   const [date, time] = dataToShow.date_time.split(' ');
   const splitedTime = time.split(':');
   const splitedDate = date.split('-');
@@ -108,7 +110,12 @@ const AppointmentScreen = ({
             <View style={styles.userDetail}>
               <View style={styles.userImgName}>
                 <View>
-                  <Text style={styles.userName}>{dataToShow.type}</Text>
+                  <Text style={styles.userName}>
+                    Appointment Type: {dataToShow.type}
+                  </Text>
+                  <Text style={styles.phoneText}>
+                    Phone: {'+92303035191910'}
+                  </Text>
                   <Text style={styles.userEmail}>
                     Time: {splitedTime[0]}:{splitedTime[2]}
                   </Text>
@@ -119,22 +126,40 @@ const AppointmentScreen = ({
                 <Text style={styles.dateText}>{monthArr[splitedDate[1]]}</Text>
               </View>
             </View>
-            <Text style={styles.trainingText}>{dataToShow.comments}</Text>
+
+            <Text style={styles.trainingText}>
+              Comment: {dataToShow.comments}
+            </Text>
           </View>
-          {playable && (
-            <TouchableOpacity
-              onPress={PlayIt}
-              style={{
-                padding: 12,
-                backgroundColor: '#008DD5',
-                borderRadius: 8,
-                width: '30%',
-                alignSelf: 'flex-end',
-              }}>
-              <Text style={{color: '#FFF', fontSize: 17}}>
-                {audioState === '' || audioState === 'Stop' ? 'Play' : 'Stop'}
-              </Text>
-            </TouchableOpacity>
+          {audioAvailabe && (
+            <Fragment>
+              {playable ? (
+                <TouchableOpacity
+                  onPress={PlayIt}
+                  style={{
+                    padding: 12,
+                    backgroundColor: '#008DD5',
+                    borderRadius: 8,
+                    width: '30%',
+                    alignSelf: 'flex-end',
+                  }}>
+                  <Text style={{color: '#FFF', fontSize: 17}}>
+                    {audioState === '' || audioState === 'Stop'
+                      ? 'Play'
+                      : 'Stop'}
+                  </Text>
+                </TouchableOpacity>
+              ) : (
+                <ActivityIndicator
+                  size="large"
+                  color="#008DD5"
+                  style={{
+                    width: '30%',
+                    alignSelf: 'flex-end',
+                  }}
+                />
+              )}
+            </Fragment>
           )}
           <View style={styles.ratingView}>
             <Text style={styles.mainTitle}>Satisfaction</Text>
@@ -187,7 +212,7 @@ const styles = StyleSheet.create({
   userImgName: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'flex-start',
+    //justifyContent: 'flex-start',
     alignItems: 'center',
   },
   profileView: {
@@ -255,8 +280,12 @@ const styles = StyleSheet.create({
     color: '#fff',
     borderWidth: 1,
     borderStyle: 'solid',
-    borderRadius: 15,
     borderColor: '#008DD5',
+  },
+  phoneText: {
+    fontFamily: fontFamily.POPPINS_SEMI,
+    fontSize: 14,
+    color: '#008DD5',
   },
   submitText: {
     color: '#008DD5',
