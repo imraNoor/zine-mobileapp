@@ -39,6 +39,7 @@ const AppointmentScreen = ({
       .then(Res => {
         if (Res.success) {
           setData(Res.data[0]);
+          console.log('P',JSON.stringify(Res.data[0]))
           isStarUpdate(
             Res.data[0].ratings.length ? Res.data[0].ratings[0].rating : 0,
           );
@@ -114,7 +115,7 @@ const AppointmentScreen = ({
                     Appointment Type: {dataToShow.type}
                   </Text>
                   <Text style={styles.phoneText}>
-                    Phone: {'+92303035191910'}
+                    Phone: {dataToShow.contact}
                   </Text>
                   <Text style={styles.userEmail}>
                     Time: {splitedTime[0]}:{splitedTime[2]}
