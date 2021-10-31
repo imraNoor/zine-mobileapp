@@ -101,7 +101,11 @@ function HomeScreen({navigation}: {navigation: any}) {
           <View style={styles.modalView}>
             <Text style={styles.modalTitle}>Do you Want to LogOut?</Text>
             <View style={styles.btnView}>
-              <TouchableOpacity style={styles.cancelBtn}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  isVisible(false);
+                }}>
                 <Text style={styles.cancelText}>No</Text>
               </TouchableOpacity>
               <TouchableOpacity

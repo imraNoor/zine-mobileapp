@@ -7,7 +7,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import fontFamily from '../../constants/fontFamily';
@@ -17,6 +16,7 @@ import Actions from '../../_redux/actions';
 import {useDispatch} from 'react-redux';
 import Loader from '../../components/loader';
 import checkEmail from '../../lib/utilts/checkEmail';
+import {updateMyToken} from '../../lib/utilts';
 import images from '../../constants/images';
 import Hook from '../../lib/hook';
 import APIs from '../../lib/api';
@@ -24,33 +24,28 @@ const logo = require('../../assets/img/Logo2.png');
 const mail = require('../../assets/img/mail.png');
 const lock = require('../../assets/img/lock.png');
 
-const SignIn = ({
-  navigation,
-  loginHandler,
-}: {
-  navigation: any;
-  loginHandler: Function;
-}) => {
+const SignIn = ({navigation}: {navigation: any}) => {
   const [kbHeight] = Hook.useKeyboard();
   const [showIndicator, isShowIndicator] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fcm_token, setFCMToken] = useState(null);
   const [passwordShow, setPasswordShow] = useState(false);
   const [done, isDone] = useState(false);
   const [emailErr, setEmailErr] = useState('');
   const [passErr, setPassErr] = useState('');
   const dispatch = useDispatch();
   const postSignInHandler = () => {
-    let checkerEmail = checkEmail(email);
+    let checkerEmail = checkEmail(email.trim());
     let checkerPasword = checkPassword(password);
 
     checkerEmail
       ? checkerPasword &&
         (isShowIndicator(true),
-        APIs.Login({email, password})
+        APIs.Login({email: email.trim(), password, fcm_token})
           .then((res: any) => {
             if (res) {
-              //console.log('ddd', JSON.stringify(res));
+              console.log('ddd', JSON.stringify(res));
               if (res.success) {
                 isDone(true);
                 setTimeout(
@@ -62,12 +57,14 @@ const SignIn = ({
               } else {
                 res.data.email && setEmailErr(res.data.email[0]);
                 res.data.password && setEmailErr(res.data.password[0]);
-                isShowIndicator(false);
+                //isShowIndicator(false);
                 isDone(false);
               }
             }
           })
-          .finally(() => {}))
+          .finally(() => {
+            isShowIndicator(false);
+          }))
       : setEmailErr('Please Enter Your Correct Email !');
   };
   const checkPassword = (passwordx: string) => {
@@ -82,6 +79,12 @@ const SignIn = ({
   const showPassword = (passwordShowx: boolean) => {
     setPasswordShow(!passwordShowx);
   };
+  useEffect(() => {
+    updateMyToken(tk => {
+      tk && setFCMToken(tk);
+      console.log('tk', tk);
+    });
+  }, []);
   return (
     <View style={styles.mainContainer}>
       <Loader visible={showIndicator} done={done} />

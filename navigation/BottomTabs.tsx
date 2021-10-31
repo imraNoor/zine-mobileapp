@@ -201,11 +201,11 @@ const TabBar = ({
             //   : images[`profile${isFocused ? 'Selected' : ''}`]
 
             route.name === 'Message'
-              ? images.message
+              ? images[`message${isFocused ? 'Selected' : ''}`]
               : route.name === 'Calender'
               ? images[`appointment${isFocused ? 'Select' : ''}`]
               : route.name === 'Call'
-              ? images.call
+              ? images[`call${isFocused ? 'Selected' : ''}`]
               : images[`profile${isFocused ? 'Selected' : ''}`];
 
           return index !== 2 ? (

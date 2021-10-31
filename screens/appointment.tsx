@@ -25,6 +25,7 @@ const AppointmentScreen = ({
 }) => {
   const whoosh = useRef(null);
   const {item} = route.params;
+  //console.log('Ítem', item);
   const [showIndicator, isShowIndicator] = useState(false);
   const [comment, setComment] = useState('');
   //const [whoosh, setwhoosh] = useState(null);
@@ -39,7 +40,7 @@ const AppointmentScreen = ({
       .then(Res => {
         if (Res.success) {
           setData(Res.data[0]);
-          console.log('P',JSON.stringify(Res.data[0]))
+          console.log('P', JSON.stringify(Res.data[0]));
           isStarUpdate(
             Res.data[0].ratings.length ? Res.data[0].ratings[0].rating : 0,
           );
@@ -97,7 +98,7 @@ const AppointmentScreen = ({
       audioState === '' || audioState === 'Stop' ? 'Playing' : 'Stop',
     );
   };
-  console.log('AppointmentDetail:\n', JSON.stringify(dataToShow));
+  console.log('AppointmentDetail:\n', dataToShow);
   const [date, time] = dataToShow.date_time.split(' ');
   const splitedTime = time.split(':');
   const splitedDate = date.split('-');

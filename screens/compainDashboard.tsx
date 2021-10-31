@@ -1,17 +1,31 @@
-import React, {useState, Fragment} from 'react';
+import React, {useState, Fragment, useEffect} from 'react';
 import {
   View,
   StyleSheet,
   Platform,
   TouchableOpacity,
   Image,
+  Alert,
 } from 'react-native';
 import {WebView} from 'react-native-webview';
 import LottieView from 'lottie-react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import APIs from '../lib/api';
 import images from '../constants/images';
 function CompainScreen({navigation}: {navigation: any}) {
   const {top, bottom} = useSafeAreaInsets();
+  const [link, setLink] = useState('');
+  useEffect(() => {
+    APIs.GetCompaignLink()
+      .then(res => {
+        if (res) {
+          const {data}: {data: string} = res;
+          data ? setLink(data) : navigation.goBack();
+          console.log('Link', res);
+        }
+      })
+      .finally(() => {});
+  }, []);
   return (
     <View style={[styles.mainContainer]}>
       <TouchableOpacity
@@ -29,44 +43,56 @@ function CompainScreen({navigation}: {navigation: any}) {
           source={images.backIcon}
         />
       </TouchableOpacity>
-      <WebView
-        style={{flex: 1}}
-        javaScriptEnabled
-        userAgent="Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3714.0 Mobile Safari/537.36"
-        onError={e => {
-         // console.log('err', e);
-        }}
-        contentMode="mobile"
-        containerStyle={{padding: 0, margin: 0}}
-        scalesPageToFit={Platform.OS === 'ios'}
-        source={{
-          html: `<style>body {width:100%;height:100%;padding:0;margin:0;}</style>
+      {Boolean(link) ? (
+        <WebView
+          style={{flex: 1}}
+          javaScriptEnabled
+          userAgent="Mozilla/5.0 (Linux; Android 8.0.0; Pixel 2 XL Build/OPD1.170816.004) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3714.0 Mobile Safari/537.36"
+          onError={e => {
+            // console.log('err', e);
+          }}
+          contentMode="mobile"
+          containerStyle={{padding: 0, margin: 0}}
+          scalesPageToFit={Platform.OS === 'ios'}
+          source={{
+            html: `<style>body {width:100%;height:100%;padding:0;margin:0;}</style>
                 <iframe 
                 webkitallowfullscreen 
                 mozallowfullscreen 
                 allowfullscreen 
-                src='https://app.databox.com/datawall/e2dbba4a726a6b13bfc7909b1fe79dbe06124c5f3?i'
+                src=${link}
                 style='border:0;margin:0,padding:0;width:100%;height:100%'/>`,
-        }}
-        startInLoadingState={true}
-        renderLoading={() => (
-          <View
-            style={{
-              width: '100%',
-              height: '100%',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <LottieView
-              source={require('../assets/lf30_editor_dsl3jbcy.json')}
-              style={{width: 150, height: 150}}
-              autoPlay
-              loop
-              speed={1.5}
-            />
-          </View>
-        )}
-      />
+          }}
+          startInLoadingState={true}
+          renderLoading={() => (
+            <View
+              style={{
+                width: '100%',
+                height: '100%',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}>
+              <LottieView
+                source={require('../assets/lf30_editor_dsl3jbcy.json')}
+                style={{width: 150, height: 150}}
+                autoPlay
+                loop
+                speed={1.5}
+              />
+            </View>
+          )}
+        />
+      ) : (
+        <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+          <LottieView
+            source={require('../assets/lf30_editor_dsl3jbcy.json')}
+            style={{width: 150, height: 150}}
+            autoPlay
+            loop
+            speed={1.5}
+          />
+        </View>
+      )}
     </View>
   );
 }

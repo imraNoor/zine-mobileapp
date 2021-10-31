@@ -88,6 +88,14 @@ const GetAppointmentCounts = () => {
       return response?.data;
     });
 };
+const GetCompaignLink = () => {
+  return axios
+    .get('/compaign-link', {...getCustomHeader()})
+    .then(({data}: AxiosResponse) => data)
+    .catch(({response}: AxiosError) => {
+      return response?.data;
+    });
+};
 export default {
   Login,
   Register,
@@ -97,6 +105,7 @@ export default {
   GetAppointmentDetail,
   GetAllAppointments,
   getServerImage,
+  GetCompaignLink,
   baseURL,
   GetAppointmentCounts,
 };
