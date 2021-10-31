@@ -1,4 +1,4 @@
-import React, {useState, Fragment, useEffect} from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   StyleSheet,
@@ -20,7 +20,10 @@ function CompainScreen({navigation}: {navigation: any}) {
       .then(res => {
         if (res) {
           const {data}: {data: string} = res;
-          data ? setLink(data) : navigation.goBack();
+          data
+            ? setLink(data)
+            : (Alert.alert('Sorry', 'Your campaign not available yet'),
+              navigation.goBack());
           console.log('Link', res);
         }
       })

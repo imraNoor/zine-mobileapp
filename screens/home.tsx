@@ -79,7 +79,9 @@ function HomeScreen({navigation}: {navigation: any}) {
               <Text style={styles.boldText}>Chat Room</Text>
             </View>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.commonDiv}>
+          <TouchableOpacity
+            style={styles.commonDiv}
+            onPress={() => navigation.navigate('BuySellScreen')}>
             <View style={styles.imgDiv}>
               <Image source={buy} style={styles.commonImg} />
             </View>

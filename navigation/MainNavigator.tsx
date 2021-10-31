@@ -16,6 +16,7 @@ import AppointmentScreen from '../screens/appointment';
 import CompainScreen from '../screens/compainDashboard';
 import CallScreen from '../screens/callScreen';
 import MessageScreen from '../screens/messageScreen';
+import BuySellScreen from '../screens/buySell';
 import {enableScreens} from 'react-native-screens';
 import {RemoteNavigation} from '../lib/utilts';
 enableScreens(true);
@@ -69,7 +70,7 @@ const MainNavigator = () => {
             title: remoteMessage.notification?.title,
             body: remoteMessage.notification?.body,
             category: 'userAction',
-            
+
             userInfo: remoteMessage.data,
           });
       });
@@ -143,6 +144,11 @@ const MainNavigator = () => {
           <Stack.Screen
             name="MessageScreen"
             component={MessageScreen}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="BuySellScreen"
+            component={BuySellScreen}
             options={{headerShown: false}}
           />
         </Fragment>
